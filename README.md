@@ -8,8 +8,6 @@ A small script that display Steam's rich presence inside discord's activity modu
 
 - Latest Node.js version 18 or later. ([nodejs.org](https://nodejs.org), version LTS).
 
------------------------------------
-
 | source | What discord normally shows |
 |---|---|
 | API web Steam (`GetPlayerSummaries`) | `gameextrainfo` et `gameid`. **C'est tout.** |
@@ -22,6 +20,8 @@ Le client Steam est une application web. On s'y branche par le protocole DevTool
 `friendStore.m_FriendsUIFriendStore.m_self`. 
 Conséquence : rien ne casse si Steam refait son
 interface, et la liste d'amis n'a même pas besoin d'être ouverte.
+
+----------------
 
 ## Installation
 
