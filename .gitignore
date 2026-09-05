@@ -1,0 +1,8 @@
+node_modules/
+config.json
+sortie.log
+*.lnk
+.fenetre/
+.fenetre-url*
+.jeux-discord.json
+partageable/

@@ -1,0 +1,68 @@
+SRPD_du_pauvre — le rich presence de Steam, jusqu'a ta carte Discord
+
+
+"CE FICHIER NE CONTIENT PAS DE SIGNATURE NUMERIQUE VALIDE"
+---------------------------------------------------------
+
+  Windows marque tout fichier venu d'Internet, et refuse d'ouvrir sans
+  prevenir ceux qu'il peut executer. UN SEUL fichier est concerne ici :
+
+      clic droit sur "Lancer SRPD_du_pauvre.bat"
+        ->  Proprietes  ->  cocher "Debloquer"  ->  OK
+
+  C'est tout. Les .js ne declenchent rien : ils sont LUS par Node, jamais
+  lances par l'explorateur.
+
+  Mieux encore, si tu n'as pas encore extrait l'archive : debloque le .zip
+  lui-meme (memes clics), et aucun fichier extrait ne portera la marque.
+
+  La boite d'avertissement propose de toute facon "Executer" — ou
+  "Informations complementaires" puis "Executer quand meme".
+
+
+AUCUNE ENVIE DE CLIQUER SUR "EXECUTER QUAND MEME" ?
+---------------------------------------------------
+
+  Alors ne lance rien de telecharge. Ouvre un terminal DANS le dossier
+  (clic droit dans le dossier -> "Ouvrir dans le Terminal") et tape :
+
+      npm install
+      node pont.js
+
+  C'est exactement ce que fait le .bat. Aucun avertissement, puisque c'est
+  toi qui lances node, et non Windows qui lance un fichier telecharge.
+
+
+"EDITEUR INCONNU", C'EST NORMAL
+-------------------------------
+
+  Ce projet n'est pas signe numeriquement. Une signature demande un certificat
+  payant, delivre a une identite verifiee. Sans elle, Windows traite n'importe
+  quel fichier venu d'Internet comme suspect — quel que soit son contenu.
+
+  Tout le code est lisible : pont.js, gui.html, stellaris.js. Rien n'est
+  compile, rien n'est minifie, et NOTES.md explique chaque choix. Va voir.
+
+
+CE QU'IL FAUT INSTALLER
+-----------------------
+
+  Node.js seulement :  https://nodejs.org  (version LTS)
+
+  Puis double-clic sur "Lancer SRPD_du_pauvre.bat".
+  Il installe le reste, cree un raccourci avec une icone, et ouvre l'interface.
+
+
+ENSUITE
+-------
+
+  1. Ouvre Steam.
+  2. Dans l'app, clique "relancer Steam" (il se ferme et repart lisible).
+  3. Clique "Demarrer".
+
+  L'app te dit a chaque instant ce qu'il reste a faire, jusqu'a
+  "Tout est bon — clique sur Demarrer !".
+
+  Aucun compte, aucune cle, aucune application Discord a creer.
+
+  Le detail est dans README.md, et le pourquoi de chaque choix dans NOTES.md.

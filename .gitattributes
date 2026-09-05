@@ -1,0 +1,13 @@
+# Le depot garde des fins de ligne LF ; Windows recoit du CRLF a la sortie.
+# Sans ca, chaque commit depuis Windows annonce « LF will be replaced by CRLF »,
+# et un clone sous Linux ou macOS recupere des fichiers en CRLF.
+* text=auto eol=lf
+
+# le .bat est lu par cmd.exe, qui veut du CRLF — et lui seul
+*.bat text eol=crlf
+*.txt text eol=crlf
+
+# binaires : jamais de conversion
+*.ico binary
+*.png binary
+*.jpg binary
