@@ -1,14 +1,16 @@
 # SRPD_du_pauvre
 
-Ptite app pour récupérer le rich presence de Steam pour didi — la vraie ligne, celle qui dit
-`Playing Galactic Lozavatan Autocracy (Xenophobe, Militarist, Materialist) in 2470` —
-jusqu'à ta carte Discord.
+Ptite app pour récupérer le rich presence de Steam pour didi !
 
-## Pourquoi ce détour
+A small script that display Steam's rich presence inside discord's activity module !
 
-Cette ligne n'existe qu'à un seul endroit, et ce n'est pas là où on la cherche d'abord :
+## Requirements : 
 
-| source | ce qu'elle donne |
+- Latest Node.js version 18 or later. ([nodejs.org](https://nodejs.org), version LTS).
+
+-----------------------------------
+
+| source | What discord normally shows |
 |---|---|
 | API web Steam (`GetPlayerSummaries`) | `gameextrainfo` et `gameid`. **C'est tout.** |
 | page de profil publique | « Currently In-Game: Stellaris ». Rien de plus. |
@@ -17,76 +19,46 @@ Cette ligne n'existe qu'à un seul endroit, et ce n'est pas là où on la cherch
 
 Le client Steam est une application web. On s'y branche par le protocole DevTools — mais on ne
 **gratte pas son interface** pour autant : on lit sa *donnée*, dans
-`friendStore.m_FriendsUIFriendStore.m_self`. Conséquence : rien ne casse si Steam refait son
+`friendStore.m_FriendsUIFriendStore.m_self`. 
+Conséquence : rien ne casse si Steam refait son
 interface, et la liste d'amis n'a même pas besoin d'être ouverte.
 
 ## Installation
 
-**Node.js requis** ([nodejs.org](https://nodejs.org), version LTS). C'est la seule chose à installer.
-
-Ensuite, double-clic sur **`Lancer SRPD_du_pauvre.bat`**. Au premier lancement il installe les
-dépendances, crée un raccourci avec l'icône du dragon, et ouvre l'interface dans sa propre fenêtre.
-
-### ⚠️ « Ce fichier ne contient pas de signature numérique valide »
-
-**Un seul fichier est concerné** — les `.js` sont *lus* par Node, jamais lancés par l'explorateur :
-
-> clic droit sur `Lancer SRPD_du_pauvre.bat` → **Propriétés** → cocher **Débloquer** → OK
-
-Mieux : débloque le `.zip` **avant** de l'extraire (mêmes clics), et aucun fichier extrait ne portera
-la marque. La boîte propose de toute façon **Exécuter**, ou *Informations complémentaires →
-Exécuter quand même*.
-
-**Et si tu préfères ne rien lancer de téléchargé**, ouvre un terminal dans le dossier :
-
-```
-npm install
-node pont.js
-```
-
-Aucun avertissement : c'est toi qui lances `node`, pas Windows qui lance un fichier venu d'ailleurs.
-Le `.bat` ne fait rien de plus, sinon vérifier que Node est là et créer le raccourci avec l'icône.
+- Double-clic on **`Lancer SRPD_du_pauvre.bat`**. - It will detect if your node.js is up to date, install dependencies and open its own GUI window.
 
 ## Utilisation
 
-1. Ouvre Steam.
-2. Clique **⟳ relancer Steam**. Il se ferme et repart dans un mode où SRPD peut le lire
-   (l'option `-cef-enable-debugging`, qui ouvre son port DevTools local). Rien n'est modifié dans
-   tes réglages Steam.
-   ⚠️ Le bouton refuse d'agir si un jeu tourne : fermer Steam pourrait fermer ta partie.
-3. Clique **Démarrer**.
+1. Open Steam.
+2. Clic on **⟳ relancer Steam**. It will close/reopen with the option `-cef-enable-debugging`, which opens a Devtool port. Nothing is modified inside your steam settings.
+   ⚠️ The button won't work if you have a Steam game already running ! Close/save it before launching the script.
+3. Clic on **Démarrer**.
 
-C'est tout. Aucun compte, aucune clé, aucune application à créer. L'app te dit à chaque instant
-ce qu'il reste à faire — jusqu'à « Tout est bon — clique sur Démarrer ! ».
+That's it ! No account, no keys, no discord app to be created. 
+The script will tell you what to do if there's an issue and will guide you until you clic on **Démarrer**
 
-Pour ne plus jamais toucher à ce bouton, ajoute `-cef-enable-debugging` aux arguments de ton
-raccourci Steam : il démarrera toujours lisible.
+If you want to never use **relancer Steam** again so the 'detection mode' will always be on when launching Steam, you can add `-cef-enable-debugging` as an argument inside your steam shortcut. Not necessary at all !
 
-### Réglages optionnels
+### Optional settings
 
-La clé d'API Steam (`steamcommunity.com/dev/apikey`) et le SteamID64 ne servent **qu'aux heures de
-jeu et aux succès** affichés sur la carte. Sans eux, tout le reste marche.
+Steam's key API (`steamcommunity.com/dev/apikey`) and SteamID64 only serve for **hours played and achievemements** display by your Discord activity tab. Without them everything still works without issue but those two settings.
 
-## Le nom affiché — « Joue à … »
+## Displayed name — « Playing … »
 
-Discord montre toujours le **nom d'une application Discord**, jamais un texte fourni par le
-programme : c'est ce qui empêche n'importe qui de se faire passer pour un jeu.
+Discord always shows a **Discord application name**, never the text corresponding to the game's name itself : That's what prevent anyone/thing to pretend being an legit game.
 
-Mais Discord publie la liste des jeux qu'il sait reconnaître — **19 192 jeux Steam**, chacun avec
-son application officielle. SRPD y cherche le jeu en cours et emprunte la sienne : « Joue à
-Stellaris » s'écrit tout seul, sans rien créer. Le bouton **changer** reste là pour les jeux absents
-de la liste, ou pour afficher tout autre chose.
+Discord publish the list of name it can recognize— **19 192 jeux Steam**, each one with it's official name. 
+SRPD searches for the displayed name and borrows it : for e.g « Playing at Stellaris » will write itself alone and automatically.
+The bouton *changer** exists to correct, display very niche game or any text possible.
 
-## La console est l'application, la fenêtre n'en est qu'une vue
+## App console 
 
-| geste | effet |
+| action | effect |
 |---|---|
-| fermer la fenêtre | **rien** — le pont continue de tourner |
-| relancer le raccourci | rouvre une vue sur le pont vivant |
+| Close the window | **nothing** — bridges continue to turn in background|
+| Relaunch shortcut | rouvre une vue sur le pont vivant |
 | **🗕 réduire** | range la fenêtre *et* la console — le pont continue |
 | **⏻ quitter**, ou fermer la console | arrête tout |
-
-C'est fait exprès : on veut la présence vivante **pendant** qu'on joue, sans fenêtre dans les pattes.
 
 ## Partie en cours
 
