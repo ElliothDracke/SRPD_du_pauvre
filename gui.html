@@ -145,9 +145,15 @@
      le bouton avait l'air ignore. Il monte du bas, se lit, et s'en va tout seul. */
   #toasts { position:fixed; left:0; right:0; bottom:16px; z-index:40; display:flex; flex-direction:column;
     align-items:center; gap:7px; pointer-events:none; padding:0 14px; }
-  .toast { max-width:430px; background:#20242c; border:1px solid var(--trait); border-left:3px solid var(--or);
-    border-radius:8px; padding:8px 14px; font-size:11.5px; line-height:1.4; color:#d8d4e0;
+  .toast { display:flex; align-items:center; gap:12px; max-width:460px; pointer-events:auto;
+    background:#20242c; border:1px solid var(--trait); border-left:3px solid var(--or);
+    border-radius:8px; padding:8px 10px 8px 14px; font-size:11.5px; line-height:1.4; color:#d8d4e0;
     box-shadow:0 8px 24px rgba(0,0,0,.6); animation:monte .2s ease-out; transition:opacity .3s, transform .3s; }
+  .toast span { flex:1; min-width:0; }
+  /* le bouton emprunte la couleur du bandeau : il appartient au message, il ne s'y ajoute pas */
+  .toast button { flex:none; margin:0; padding:2px 11px; font-size:10.5px; text-transform:lowercase;
+    background:transparent; border-color:#3d4350; color:inherit; opacity:.75; }
+  .toast button:hover { background:rgba(255,255,255,.06); border-color:currentcolor; opacity:1; color:inherit; }
   .toast.ko { border-left-color:var(--rouge); color:#ffcaca; }
   .toast.ok { border-left-color:var(--vert); }
   .toast.part { opacity:0; transform:translateY(7px); }
@@ -444,9 +450,17 @@ const VIDE_PX = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAA
    ne bloque rien : c'est une nouvelle, pas une question. Les ennuis restent 7 s, le reste 4,5 s. */
 function toast(msg, niv) {
   const d = document.createElement("div");
-  d.className = "toast " + (niv || ""); d.textContent = msg;
+  d.className = "toast " + (niv || "");
+  const t = document.createElement("span"); t.textContent = msg;
+  const b = document.createElement("button"); b.textContent = "ok";
+  const partir = () => { d.classList.add("part"); setTimeout(() => d.remove(), 330); };
+  b.onclick = partir;
+  d.append(t, b);
   $("toasts").appendChild(d);
-  setTimeout(() => { d.classList.add("part"); setTimeout(() => d.remove(), 330); }, niv === "ko" ? 7000 : 4500);
+  /* ⏳ UN ENNUI ATTEND QU'ON L'AIT VU. Il disparaissait au bout de sept secondes, donc pendant une
+     partie il pouvait passer entierement inapercu — et c'est justement celui-la qu'il faut lire.
+     Le reste s'efface tout seul : on n'a pas a accuser reception d'une bonne nouvelle. */
+  if (niv !== "ko") setTimeout(partir, 4500);
 }
 
 /* 🖱️ TOUT CLIC PASSE PAR ICI, ET TOUT CLIC SE VOIT. Le bouton s'occupe pendant la requete, un
@@ -533,7 +547,10 @@ async function rafraichir() {
     : !e.jeu ? ["vide", "en attente d'un jeu à détecter"]
     : !enMarche ? ["pret", "Tout est bon — clique sur Démarrer !"]
     : e.ligne ? ["", e.ligne]
-    : ["vide", "ce jeu ne publie pas de ligne détaillée"];
+    /* ⏳ « ce jeu ne publie pas de ligne détaillée » sonnait comme un verdict definitif sur le jeu,
+       alors que c'est presque toujours passager : hors partie, au menu ou en chargement, Steam rend
+       une chaine vide. Verifie a la source — le pont lisait juste, c'est le message qui accusait. */
+    : ["vide", "pas de ligne pour l'instant — menu ou chargement ?"];
   /* 🟩 LA LIGNE S'AFFICHE COMME STEAM L'AFFICHE : le nom du jeu en vert vif, la ligne en dessous en
      vert eteint, sur le fond de sa liste d'amis. C'est sa donnee, autant lui laisser sa mise en page. */
   if (dit[0] === "") {

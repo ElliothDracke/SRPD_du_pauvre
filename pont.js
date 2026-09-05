@@ -835,7 +835,12 @@ serveur.listen(PORT_GUI, "127.0.0.1", () => {
   ouvrirFenetre(adresse());
 });
 // l'adresse ne doit pas survivre au pont : sinon un lancement suivant ouvrirait une vue sur du vide
-const oublierUrl = () => { try { fs.unlinkSync(FIL_URL); } catch (e) {} };
+// ⚠️ ON N'EFFACE QUE SA PROPRE ADRESSE. En s'arretant, une instance supprimait le fichier sans le
+//    lire : si une autre venait de demarrer sur le meme port, c'est SON adresse qui disparaissait,
+//    et le lancement suivant ne retrouvait plus la fenetre d'un pont pourtant bien vivant.
+const oublierUrl = () => {
+  try { if (fs.readFileSync(FIL_URL, "utf8").trim() === adresse()) fs.unlinkSync(FIL_URL); } catch (e) {}
+};
 process.on("exit", oublierUrl);
 process.on("SIGINT", () => { oublierUrl(); process.exit(0); });
 
