@@ -2,11 +2,14 @@
 title SRPD_du_pauvre
 cd /d "%~dp0"
 
-rem ATTENTION : CE FICHIER RESTE EN ASCII PUR ET EN CRLF.
-rem cmd.exe le lit dans le codage OEM de la machine, pas en UTF-8 : un emoji ou une lettre accentuee
-rem s'y decode en octets parasites, et une fin de ligne LF seule lui fait couper des lignes en plein
-rem milieu. Les deux ensemble transforment ce fichier en suite de commandes inconnues. Mesure faite :
-rem apres ajout d'un emoji en commentaire, cmd tentait d'executer 're', 'ue', 'TALLER'...
+rem ATTENTION : CE FICHIER RESTE EN ASCII PUR.
+rem cmd.exe le lit dans le codage OEM de la machine, pas en UTF-8. Un emoji ou une lettre accentuee
+rem s'y decode en octets parasites qui lui font couper des lignes en plein milieu : apres avoir mis
+rem un emoji dans un commentaire, cmd tentait d'executer 're', 'ue', 'TALLER'. Le fichier entier
+rem devient inexploitable, et rien n'indique pourquoi.
+rem Les CRLF, eux, ne sont PAS la cause : mesure faite, ce meme fichier en LF seul s'execute
+rem correctement. On les garde par convention (et .gitattributes les impose), mais la regle qui
+rem compte, la seule, est : aucun caractere hors ASCII ici.
 
 rem CE FICHIER N'INSTALLE PAS NODE, et n'installe rien en dehors de ce dossier.
 rem Il verifie que Node est la, puis pose les deux dependances dans .\node_modules : rien de global,
