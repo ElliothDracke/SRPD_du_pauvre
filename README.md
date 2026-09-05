@@ -60,36 +60,36 @@ The bouton *changer** exists to correct, display very niche game or any text pos
 | **🗕 réduire** | range la fenêtre *et* la console — le pont continue |
 | **⏻ quitter**, ou fermer la console | arrête tout |
 
-## Partie en cours
+## Current game
 
-Quand le jeu sait être lu, une carte affiche ce que Steam ne saura jamais dire — pour Stellaris :
-nom de l'empire, date en jeu, flotte, planètes, DLC, et le **drapeau reconstitué** à partir des
-masques du jeu (il n'existe nulle part en image).
+When a game can be read, a card shows what Steam will never tell you — for Stellaris: empire name,
+in-game date, fleet, planets, DLCs, and the **flag rebuilt** from the game's own masks (it exists
+nowhere as an image).
 
-Ça ne se généralise pas : chaque éditeur invente son format de sauvegarde. Ajouter un jeu, c'est
-écrire une fonction dans `stellaris.js` et l'inscrire au registre `LECTEURS` — sans toucher au pont.
-Tout le reste (ligne, jaquette, heures, succès, application Discord, dossier d'installation) marche
-avec **n'importe quel** jeu Steam.
+This part doesn't generalise: every publisher invents its own save format. Adding a game means
+writing one function in `stellaris.js` and listing it in the `LECTEURS` registry — without touching
+the bridge. Everything else (the line, cover art, playtime, achievements, Discord application,
+install folder) works with **any** Steam game.
 
-## Ce que ça coûte
+## What it costs
 
-- une lecture toutes les 10 s, sur **une seule** cible une fois trouvée ;
-- une écriture vers Discord **uniquement quand ce qui part a changé** ;
-- Discord plafonne de toute façon `setActivity` à une mise à jour toutes les 15 s.
+- one read every 10 s, against a **single** target once it's found;
+- a write to Discord **only when what goes out has changed**;
+- Discord caps `setActivity` at one update every 15 s anyway.
 
-Mesuré : **74 Mo** de mémoire et **0,6 s de processeur pour 800 requêtes**. Sur 800 requêtes, les
-handles passent de 304 à 306 et les threads ne bougent pas — rien ne s'accumule.
+Measured: **74 MB** of memory and **0.6 s of CPU for 800 requests**. Across those 800 requests,
+handle count goes from 304 to 306 and thread count doesn't move — nothing accumulates.
 
-## Sécurité
+## Security
 
-L'interface écoute sur `127.0.0.1` uniquement, sur un port improbable, et exige un **jeton aléatoire
-régénéré à chaque lancement**. Sans lui, tout appel est refusé (403) — une page web ouverte ailleurs
-dans ton navigateur ne peut donc pas piloter le pont.
+The interface listens on `127.0.0.1` only, on an unlikely port, and requires a **random token
+regenerated at every launch**. Without it, every call is refused (403) — so a web page open
+elsewhere in your browser cannot drive the bridge.
 
-`config.json` contient ta clé d'API Steam s'il y en a une. Il est dans `.gitignore`, n'est jamais
-renvoyé à l'interface (qui n'affiche que `(enregistrée)`), et **ne doit pas être copié** si tu passes
-le dossier à quelqu'un.
+`config.json` holds your Steam API key, if you set one. It's in `.gitignore`, is never sent back to
+the interface (which only ever displays `(enregistrée)`), and **must not be copied** if you hand the
+folder to someone else.
 
-## Licence
+## License
 
-Fais-en ce que tu veux.
+Do whatever you want with it.
