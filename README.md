@@ -29,10 +29,6 @@ dépendances, crée un raccourci avec l'icône du dragon, et ouvre l'interface d
 
 ### ⚠️ « Ce fichier ne contient pas de signature numérique valide »
 
-C'est normal, et ça ne dit rien du contenu : **ce projet n'est pas signé numériquement.** Une
-signature exige un certificat payant délivré à une identité vérifiée ; sans elle, Windows traite
-tout fichier venu d'Internet comme suspect, quel qu'il soit.
-
 **Un seul fichier est concerné** — les `.js` sont *lus* par Node, jamais lancés par l'explorateur :
 
 > clic droit sur `Lancer SRPD_du_pauvre.bat` → **Propriétés** → cocher **Débloquer** → OK
@@ -50,10 +46,6 @@ node pont.js
 
 Aucun avertissement : c'est toi qui lances `node`, pas Windows qui lance un fichier venu d'ailleurs.
 Le `.bat` ne fait rien de plus, sinon vérifier que Node est là et créer le raccourci avec l'icône.
-
-> 💡 Il n'y a plus de script `.ps1` dans le projet : c'était le blocage le plus courant, une stratégie
-> d'exécution refusant par défaut tout script non signé. Le lanceur fait le même travail, en passant
-> son code en ligne — ce qui n'y est pas soumis.
 
 ## Utilisation
 
