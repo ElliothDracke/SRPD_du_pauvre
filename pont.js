@@ -386,6 +386,10 @@ async function effacer() {
 /* ⚖️ QUAND `tasklist` ECHOUE, ON NE SAIT PAS — et « je ne sais pas » ne doit pas devenir « Steam est
    ferme », qui est l'affirmation la plus alarmante des deux. On retient l'hypothese la plus probable
    et la plus douce : ouvert, mais pas encore lisible. */
+/* 🔢 UN APPID EST UN NOMBRE, ET RIEN D'AUTRE. Il vient du texte d'une URL d'icone fournie par Steam,
+   puis sert a construire un CHEMIN DE FICHIER (`appmanifest_<appid>.acf`) et des URL. Une valeur
+   inattendue s'y promenerait donc dans les deux. On la valide a la source plutot que partout apres. */
+const appidValide = a => (/^\d{1,10}$/.test(String(a || "")) ? String(a) : null);
 const steamTourne = () => new Promise(res => execFile("tasklist", ["/FI", "IMAGENAME eq steam.exe", "/NH"],
   { timeout: 5000 }, (e, out) => res(e ? true : /steam\.exe/i.test(String(out)))));
 let enLecture = false, echecsLecture = 0;
@@ -426,7 +430,7 @@ async function _tour(pousse) {
 
   etat.cible = "SharedJSContext"; etat.moiSteam = d.nom; etat.statut = d.statut;
   etat.jeu = d.jeu || null;
-  etat.appid = d.appid && d.appid !== "0" ? d.appid : null;
+  etat.appid = appidValide(d.appid) === "0" ? null : appidValide(d.appid);
   etat.ligne = d.rp || null;
   etat.candidats = d.rp ? [d.rp] : [];
   if (etat.appid && !_table) await tableDiscord().catch(() => {});   // savoir quoi proposer, meme a l'arret
@@ -449,7 +453,7 @@ async function parApiWeb(pousse) {
     const r = await avecDelai(fetch(u), 10000, "l'API Steam"); const j = await r.json();
     const p = j.response && j.response.players && j.response.players[0];
     etat.jeu = p && p.gameextrainfo ? p.gameextrainfo : null;
-    etat.appid = p && p.gameid ? String(p.gameid) : null;   // sert a la jaquette et au lien SteamDB
+    etat.appid = p && p.gameid ? appidValide(p.gameid) : null;   // sert a la jaquette et au lien SteamDB
     if (etat.appid && !_table) await tableDiscord().catch(() => {});
     etat.auto = trouve();
     etat.jaquette = await jaquette(etat.appid);
@@ -819,6 +823,26 @@ async function action(u) {
     // l'application visee a pu changer avec ces reglages : on se rebranche si besoin, sans bloquer
     if (clientActuel && clientVoulu() !== clientActuel) brancherDiscord();
     return {};
+  }
+  /* 🔎 CHERCHER UNE APPLICATION PAR LE NOM DU JEU. La table des 19 192 jeux est deja en memoire pour
+     le choix automatique ; on la relit simplement dans l'autre sens. Personne ne connait par coeur un
+     identifiant a 18 chiffres — mais tout le monde sait ecrire « stellaris ». */
+  if (quoi === "chercher") {
+    const n = (u.searchParams.get("nom") || "").trim().toLowerCase();
+    if (n.length < 2) return { jeux: [] };
+    await tableDiscord().catch(() => {});
+    if (!_table) return { ok: false, msg: "table des jeux Discord indisponible" };
+    const vus = new Set(), trouves = [];
+    for (const [appid, v] of Object.entries(_table)) {
+      if (!v.nom || vus.has(v.id) || !v.nom.toLowerCase().includes(n)) continue;
+      vus.add(v.id); trouves.push({ nom: v.nom, id: v.id, appid });
+    }
+    // ce qui COMMENCE par la recherche d'abord, puis le nom le plus court : « Stellaris » avant
+    // « Ghost Signal: A Stellaris Game »
+    trouves.sort((a, b) =>
+      (a.nom.toLowerCase().startsWith(n) ? 0 : 1) - (b.nom.toLowerCase().startsWith(n) ? 0 : 1)
+      || a.nom.length - b.nom.length);
+    return { jeux: trouves.slice(0, 8), total: trouves.length };
   }
   if (quoi === "comptes") return { comptes: comptesLocaux() };
   if (quoi === "testApi") return testerApi();

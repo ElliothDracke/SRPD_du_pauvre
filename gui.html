@@ -1,5 +1,10 @@
 <!doctype html>
 <meta charset="utf-8">
+<!-- 🔒 LE JETON EST DANS L'URL, DONC DANS LE REFERER. Cette page charge des images chez Valve et
+     chez Discord : sans cette ligne, chaque requete leur envoie
+     « Referer: http://127.0.0.1:49731/?j=<jeton> » — c'est-a-dire la cle du pont, a des tiers, a
+     chaque changement de jeu. Un jeton qui sort de la machine ne protege plus rien. -->
+<meta name="referrer" content="no-referrer">
 <title>SRPD_du_pauvre</title>
 <!-- 🖥️ sans icone, Edge colle son globe par defaut dans la barre des taches. Un petit tube cathodique
      en SVG, dessine en pure geometrie : des rectangles et des traits, rien d'organique — c'est ce que
@@ -121,8 +126,8 @@
   .ddetail.attente { color:#6f6a80; font-style:italic; }
   .dcorps img.creuse { box-shadow:inset 0 0 0 1px #2b2f38; }
   .dtemps { font-size:11.5px; color:#8fd39f; margin-top:2px; }
-  .coches { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:0;
-    padding:8px 0; border-bottom:1px solid #23272f; }
+  /* pas de filet ici : l'intertitre suivant tire deja le sien, deux traits colles ne separent rien */
+  .coches { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:0; padding:5px 0; }
   .coche { display:flex; align-items:center; gap:6px; margin:0; font-size:11.5px; color:#c3c0cc; cursor:pointer; }
   .coche input { width:auto; accent-color:var(--or); cursor:pointer; margin:0; }
   /* la case du gros interrupteur va au bord : la ligne se lit comme un reglage, pas comme une liste */
@@ -139,18 +144,37 @@
      au-dessus de son champ double la hauteur du panneau pour rien — et sur une colonne, l'oeil
      relit chaque intitule au lieu de descendre. Le verdict se glisse sous le champ. */
   .modal .champ { display:grid; grid-template-columns:148px 1fr; align-items:center; gap:3px 10px;
-    margin:0; padding:7px 0; border-bottom:1px solid #23272f; }
+    margin:0; padding:8px 0; border-bottom:1px solid #23272f; }
+  .modal .champ:last-of-type { border-bottom:none; }
+  /* 📏 un verdict VIDE gardait ses 16 px reserves et poussait tout le bas de la rangee : l'espace
+     au-dessus et en dessous ne se ressemblaient plus. Il ne prend sa place qu'une fois rempli. */
+  .modal .champ .verdict:empty { min-height:0; padding:0; }
+  /* la phrase de confirmation se lit sous le champ, centree */
+  .verdict.centre { text-align:center; }
+  /* la liste proposee par la recherche, sous le champ et dans sa colonne */
+  .propositions { grid-column:2; display:flex; flex-direction:column; gap:2px; margin:4px 0 2px; }
+  .propositions[hidden] { display:none; }
+  .propositions button { margin:0; width:100%; text-align:left; font-size:10.5px; padding:3px 9px;
+    background:#12141a; border-color:#262a32; display:flex; align-items:center; gap:8px; }
+  .propositions button:hover { border-color:var(--or); background:#1b1e26; color:#fff; }
+  .propositions .pid { margin-left:auto; color:#6a6578; font-size:9.5px; flex:none; }
   .modal .champ label { grid-column:1; margin:0; line-height:1.3; }
   .modal .champ .saisie, .modal .champ .verdict { grid-column:2; }
   /* sauf celui-la : son libelle est trop long pour la colonne, il prend sa propre ligne */
   .modal .champ.empile { grid-template-columns:1fr; gap:5px; }
   .modal .champ.empile label, .modal .champ.empile .saisie, .modal .champ.empile .verdict { grid-column:1; }
   /* les boutons d'action ont la MEME largeur : sinon leurs bords gauches dansent d'une ligne a l'autre */
-  .modal .saisie .mini { min-width:76px; justify-content:center; }
-  .modal .saisie .oeil { min-width:0; width:32px; padding:0; font-size:11px; }
+  .modal .saisie .mini { min-width:76px; text-align:center; }
+  /* 👁 L'OEIL VIT DANS LE CHAMP, pas a cote. A cote, il volait 38 px a la ligne de la cle et son
+     champ devenait plus court que celui du SteamID : deux rangees, deux largeurs, rien d'aligne. */
+  .champcle { position:relative; flex:1; min-width:0; display:flex; }
+  .champcle input { flex:1; min-width:0; padding-right:30px; }
+  .champcle .oeil { position:absolute; right:1px; top:1px; bottom:1px; width:27px; margin:0; padding:0;
+    border:none; background:transparent; font-size:11px; opacity:.6; border-radius:0 5px 5px 0; }
+  .champcle .oeil:hover { opacity:1; background:#20242c; }
   .ticone { font-size:12px; color:var(--or); margin-right:-3px; }
   button.large { width:100%; margin:14px 0 0; padding:8px; }
-  .aide { font-size:10.5px; color:#78738a; line-height:1.6; margin:5px 0 2px; }
+  .aide { font-size:10px; color:#78738a; line-height:1.55; margin:4px 0 6px; }
   .aide b { color:#9c96ac; font-weight:500; }
   /* l'intervalle rejoint les cases a cocher : cinq chiffres n'ont jamais eu besoin d'une demi-largeur */
   .intervalle label { margin:0; white-space:nowrap; }
@@ -214,6 +238,8 @@
   button.doux { font-size:10.5px; padding:3px 9px; margin:0; color:var(--gris); background:transparent;
     border-color:transparent; white-space:nowrap; }
   button.doux:hover { color:#fff; background:#2a2e37; border-color:var(--trait); }
+  /* un bouton d'icone est carre : le meme creux a gauche et a droite du glyphe */
+  button.icone { padding:2px 0; width:24px; text-align:center; font-size:12px; line-height:1; }
   ul { list-style:none; margin:0; padding:0; max-height:150px; overflow-y:auto; }
   li { font-size:11px; color:var(--gris); padding:1px 0; border-bottom:1px solid #20242c; }
   li b { color:#b9b4c8; font-weight:400; }
@@ -251,9 +277,10 @@
   .ecran::before { content:""; position:absolute; inset:0; pointer-events:none; z-index:4; border-radius:12px/9px;
     background:linear-gradient(160deg, rgba(255,255,255,.13) 0%, rgba(255,255,255,.03) 22%, transparent 46%);
     box-shadow: inset 0 0 42px rgba(0,0,0,.8), inset 0 0 90px rgba(0,0,0,.45), inset 0 0 7px rgba(150,255,180,.09); }
+  /* le creux du bas remonte le dessin : centre sur toute la hauteur, ses pattes touchaient NO SIGNAL */
   .veille { position:absolute; inset:0; margin:0; display:flex; flex-direction:column; justify-content:center;
-    align-items:center; font:8px/1.06 "Courier New",monospace; color:#39d353; text-shadow:0 0 5px rgba(57,211,83,.45);
-    white-space:pre; letter-spacing:.5px; }
+    align-items:center; padding-bottom:26px; font:8px/1.06 "Courier New",monospace; color:#39d353;
+    text-shadow:0 0 5px rgba(57,211,83,.45); white-space:pre; letter-spacing:.5px; }
   .veille[hidden] { display:none; }   /* une classe bat l'attribut hidden du navigateur : il faut le redire ici */
   .nosignal { position:absolute; left:0; right:0; bottom:9px; z-index:2; text-align:center;
     font:9px "Courier New",monospace; letter-spacing:4px; color:#39d353; text-shadow:0 0 6px rgba(57,211,83,.5); }
@@ -299,8 +326,10 @@
        l'application — reduire, quitter, regler — se rangent sur la meme rangee que le titre. -->
   <div class="titre" title="Le pont tourne tant que la console est ouverte. Fermer cette fenêtre ne l'arrête pas — relance le raccourci pour la rouvrir.">état
     <span class="chefs">
-      <button class="doux" id="b-min" title="Réduit cette fenêtre ET la console — le pont continue de tourner">🗕 réduire</button>
-      <button class="doux danger" id="b-quit" title="Arrête le pont et ferme la console">⏻ quitter</button>
+      <!-- 🔣 l'icone seule, la phrase en infobulle : deux mots en clair a cote du titre faisaient
+           deux boutons de texte dans un en-tete qui n'en demandait pas. -->
+      <button class="doux icone" id="b-min" title="Réduire cette fenêtre et la console — le pont continue de tourner">🗕</button>
+      <button class="doux icone danger" id="b-quit" title="Arrêter le pont et fermer la console">⏻</button>
       <button class="engrenage" id="b-opt" title="Réglages">⚙</button>
     </span>
   </div>
@@ -433,7 +462,7 @@
   <div class="champ"><label><span data-i18n="cle">Clé d'API Steam</span> <span class="opt" data-i18n="cleopt">(optionnelle)</span></label>
     <!-- 🙈 une cle d'API se masque : elle donne acces a ton profil, et une capture d'ecran suffit
          a la donner. L'oeil la revele le temps de la verifier. -->
-    <div class="saisie"><input id="c-key" type="password" placeholder="(enregistrée)"><button class="mini oeil" id="b-oeil" data-i18n-t="voir" title="Afficher">👁</button><button class="mini" id="b-tapi" data-i18n="tester">Tester</button></div>
+    <div class="saisie"><span class="champcle"><input id="c-key" type="password" placeholder="(enregistrée)"><button class="oeil" id="b-oeil" data-i18n-t="voir" title="Afficher">👁</button></span><button class="mini" id="b-tapi" data-i18n="tester">Tester</button></div>
     <div class="verdict" id="r-api"></div></div>
   <!-- ce qui s'ajoute au nom du jeu, et a quelle cadence on relit : trois reglages courts, une rangee -->
   <div class="coches">
@@ -447,16 +476,15 @@
   </div>
 
   <div class="sous" data-i18n="affiche">ce que Discord affiche</div>
-  <label class="coche gros"><span data-i18n="auto">trouver l'application du jeu automatiquement</span><input type="checkbox" id="c-auto"></label>
-  <!-- 📐 des retours a la ligne CHOISIS : une idee par ligne, coupee a la fin d'une phrase et non
-       au milieu d'un mot. Le texte au fil de l'eau cassait ses phrases n'importe ou. -->
-  <div class="aide" data-i18n-html="aide">Discord publie la liste des jeux qu'il sait reconnaître — <b>19 192 jeux Steam</b>.<br>
-    SRPD y cherche le jeu en cours et emprunte son application officielle.<br>
-    « Joue à Stellaris » s'écrit alors tout seul, sans rien créer ni copier.<br>
-    Le bouton <b>changer</b> de la page reste prioritaire si tu préfères choisir toi-même.</div>
-  <!-- ce libelle-la est trop long pour tenir a gauche : il prend sa propre ligne, comme au gabarit -->
-  <div class="champ empile"><label><span data-i18n="repli">Application de repli</span> <span class="opt" data-i18n="replinote">(si le jeu n'est pas dans la liste)</span></label>
-    <div class="saisie"><input id="c-app"><button class="mini" id="b-tdisc" data-i18n="tester">Tester</button></div>
+  <!-- 💬 L'EXPLICATION PASSE EN INFOBULLE. Quatre lignes de texte gris sous un interrupteur, c'est
+       un paragraphe que personne ne relit apres la premiere fois — mais qu'on veut pouvoir retrouver. -->
+  <label class="coche gros" data-i18n-t="aide" title="Discord publie la liste des jeux qu'il reconnaît — 19 192 jeux Steam.&#10;SRPD y trouve le jeu en cours et emprunte son application : rien à créer.&#10;Le bouton « changer » de la page reste prioritaire."><span data-i18n="auto">trouver l'application du jeu automatiquement</span><input type="checkbox" id="c-auto"></label>
+  <!-- 🔎 ON TAPE UN NOM, PAS UN NUMERO. « Application de repli » ne disait rien : ce champ decide ce
+       que Discord ecrit apres « Joue a ». Et comme personne ne connait un identifiant a 18 chiffres,
+       ecrire « stellaris » propose les jeux correspondants et remplit le numero au clic. -->
+  <div class="champ"><label><span data-i18n="repli">« Joue à… » par défaut</span> <span class="opt" data-i18n="replinote">(si le jeu n'est pas trouvé)</span></label>
+    <div class="saisie"><input id="c-app" data-i18n-ph="replph" placeholder="un nom de jeu, ou un identifiant"><button class="mini" id="b-tdisc" data-i18n="tester">Tester</button></div>
+    <div class="propositions" id="c-prop" hidden></div>
     <div class="verdict" id="r-disc"></div></div>
 
   <button class="fort large" id="b-cfg" data-i18n="enregistrer">Enregistrer</button>
@@ -682,20 +710,54 @@ const I18N = {
     detecter: "Détecter", cle: "Clé d'API Steam", cleopt: "(optionnelle)", voir: "Afficher",
     tester: "Tester", heures: "temps de jeu total", succes: "succès", lecture: "Lecture toutes les",
     affiche: "ce que Discord affiche", auto: "trouver l'application du jeu automatiquement",
-    aide: "Discord publie la liste des jeux qu'il sait reconnaître — <b>19 192 jeux Steam</b>.<br>"
-      + "SRPD y cherche le jeu en cours et emprunte son application officielle.<br>"
-      + "« Joue à Stellaris » s'écrit alors tout seul, sans rien créer ni copier.<br>"
-      + "Le bouton <b>changer</b> de la page reste prioritaire si tu préfères choisir toi-même.",
-    repli: "Application de repli", replinote: "(si le jeu n'est pas dans la liste)", enregistrer: "Enregistrer" },
+    aide: "Discord publie la liste des jeux qu'il reconnaît — 19 192 jeux Steam.\n"
+      + "SRPD y trouve le jeu en cours et emprunte son application : rien à créer.\n"
+      + "Le bouton « changer » de la page reste prioritaire.",
+    trouve: "jeu trouvé",
+    repli: "« Joue à… » par défaut", replinote: "(si le jeu n'est pas trouvé)",
+    replph: "un nom de jeu, ou un identifiant", enregistrer: "Enregistrer" },
   en: { titre: "settings", fermer: "Close", lu: "what it reads", steamid: "SteamID64",
     detecter: "Detect", cle: "Steam API key", cleopt: "(optional)", voir: "Show",
     tester: "Test", heures: "total playtime", succes: "achievements", lecture: "Read every",
     affiche: "what Discord shows", auto: "find the game's application automatically",
-    aide: "Discord publishes the list of games it recognises — <b>19,192 Steam games</b>.<br>"
-      + "SRPD looks up the running game and borrows its official application.<br>"
-      + "« Playing Stellaris » then writes itself, with nothing to create or copy.<br>"
-      + "The <b>changer</b> button on the page still wins if you would rather pick yourself.",
-    repli: "Fallback application", replinote: "(if the game is not in the list)", enregistrer: "Save" },
+    aide: "Discord publishes the list of games it recognises — 19,192 Steam games.\n"
+      + "SRPD finds the running game and borrows its application: nothing to create.\n"
+      + "The « changer » button on the page still wins.",
+    trouve: "game found",
+    repli: "Default « Playing… »", replinote: "(if the game isn't found)",
+    replph: "a game name, or an id", enregistrer: "Save" },
+};
+
+/* 🔎 ECRIRE UN NOM PLUTOT QU'UN NUMERO. La table des 19 192 jeux est deja chargee cote pont pour le
+   choix automatique ; on la relit dans l'autre sens. Le champ accepte les deux : des chiffres, ou
+   un nom qui propose des jeux et remplit l'identifiant au clic. */
+let minuteurCherche = null;
+$("c-app").oninput = () => {
+  clearTimeout(minuteurCherche);
+  const v = $("c-app").value.trim();
+  if (/^\d*$/.test(v) || v.length < 2) { $("c-prop").hidden = true; return; }   // que des chiffres = deja un identifiant
+  minuteurCherche = setTimeout(async () => {
+    const r = await demander("chercher", "&nom=" + encodeURIComponent(v));
+    const l = $("c-prop");
+    if (!r.jeux || !r.jeux.length) {
+      l.innerHTML = "<button disabled>" + (r.msg ? esc(r.msg) : "aucun jeu de ce nom") + "</button>";
+      l.hidden = false; return;
+    }
+    l.innerHTML = "";
+    for (const j of r.jeux) {
+      const b = document.createElement("button");
+      b.innerHTML = esc(j.nom) + "<span class=\"pid\">" + esc(j.id) + "</span>";
+      b.onclick = () => {
+        $("c-app").value = j.id; l.hidden = true;
+        const t = I18N[localStorage.getItem("langue") || "fr"] || I18N.fr;
+        const r = $("r-disc");
+        r.textContent = (t.trouve || "jeu trouvé") + " : " + j.nom;
+        r.className = "verdict vok centre";
+      };
+      l.appendChild(b);
+    }
+    l.hidden = false;
+  }, 280);   // on attend que la frappe s'arrete : pas une requete par lettre
 };
 // 🙈 la cle reste masquee par defaut : une capture d'ecran du panneau suffirait a la donner
 $("b-oeil").onclick = () => {
@@ -708,6 +770,7 @@ function appliquerLangue(l) {
   $("c-modal").querySelectorAll("[data-i18n]").forEach(e => { const v = t[e.dataset.i18n]; if (v) e.textContent = v; });
   $("c-modal").querySelectorAll("[data-i18n-html]").forEach(e => { const v = t[e.dataset.i18nHtml]; if (v) e.innerHTML = v; });
   $("c-modal").querySelectorAll("[data-i18n-t]").forEach(e => { const v = t[e.dataset.i18nT]; if (v) e.title = v; });
+  $("c-modal").querySelectorAll("[data-i18n-ph]").forEach(e => { const v = t[e.dataset.i18nPh]; if (v) e.placeholder = v; });
   $("b-langue").textContent = l === "fr" ? "EN" : "FR";   // le bouton annonce la langue d'ARRIVEE
   localStorage.setItem("langue", l);
 }
