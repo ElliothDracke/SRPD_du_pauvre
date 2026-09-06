@@ -483,11 +483,25 @@ async function api(q, extra, btn) {
   return r;
 }
 
-let vuProbleme = null;
+let vuProbleme = null, echecsEtat = 0;
 async function rafraichir() {
   let e;
-  try { e = await (await fetch("/etat?j=" + J, { signal: AbortSignal.timeout(12000) })).json(); }
-  catch (err) { return; }
+  try { e = await (await fetch("/etat?j=" + J, { signal: AbortSignal.timeout(12000) })).json(); echecsEtat = 0; }
+  catch (err) {
+    /* 🚪 UNE VUE SANS PONT N'A PLUS DE RAISON D'EXISTER. Si la console est morte, cette fenetre est
+       un fantome : invisible, elle survit, et Windows la ressuscite au demarrage suivant — huit
+       processus sur le GPU integre, constates. Le menage cote pont s'en charge normalement, mais il
+       repose sur un signal systeme qu'on ne maitrise pas. Ceci n'en depend pas : apres sept echecs
+       consecutifs (~21 s), la page se ferme elle-meme. Sur localhost, ce n'est plus un incident. */
+    if (++echecsEtat >= 7) {
+      document.title = "SRPD — pont arrêté";
+      document.body.innerHTML = "<div style=\"padding:40px;text-align:center;color:#8a86a0;"
+        + "font:13px/1.7 system-ui,sans-serif\">Le pont est arr&ecirc;t&eacute;.<br>"
+        + "Cette fen&ecirc;tre n'a plus rien &agrave; afficher&nbsp;: tu peux la fermer.</div>";
+      window.close();
+    }
+    return;
+  }
   // 🔔 les ennuis du pont remontent aussi, pas seulement ceux qu'on a provoques par un clic.
   //    Numerotes a la source : un bandeau par ennui, jamais deux fois le meme, aucun au chargement.
   if (e.probleme) { if (vuProbleme !== null && e.probleme.n > vuProbleme) toast(e.probleme.m, "ko"); vuProbleme = e.probleme.n; }
