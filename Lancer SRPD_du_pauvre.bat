@@ -46,7 +46,18 @@ rem lance node-gyp et l'installation reste bloquee plusieurs minutes, sans messa
 rem n'appelle jamais register(). Mesure : 814 ms et 1,1 Mo sans elle, contre une compilation
 rem interminable avec.
 if not exist "node_modules\discord-rpc" (
-  echo   Premiere fois : installation de 2 dependances dans .\node_modules ^(~1 Mo^)...
+  echo.
+  echo   PREMIERE FOIS : installation de 2 dependances dans .\node_modules ^(~1 Mo^)
+  echo.
+  echo     ws            parler WebSocket au client Steam. C'est par la qu'on lit la ligne
+  echo                   de rich presence, dans les donnees du client et non dans son affichage.
+  echo.
+  echo     discord-rpc   parler a Discord. Discord n'ecoute sur aucun port : il expose un tube
+  echo                   nomme local. Ce paquet fait la poignee de main dessus et envoie la carte.
+  echo                   ^(paquet communautaire, pas officiel Discord - voir README^)
+  echo.
+  echo   Rien d'autre n'est installe, et rien hors de ce dossier.
+  echo.
   call npm install --omit=optional --no-audit --no-fund
   if not exist "node_modules\discord-rpc" (
     echo.

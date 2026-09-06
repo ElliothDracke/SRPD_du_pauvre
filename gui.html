@@ -103,12 +103,15 @@
   /* 💬 la carte Discord, reproduite : fond plus sombre que la carte, image carree a gauche,
      trois lignes a droite. Les proportions sont celles de la vraie, pas une invention. */
   .dcard { background:#111318; border:1px solid #26292f; border-radius:9px; padding:11px 13px; }
-  .dtete { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
-  .dtete img { width:22px; height:22px; border-radius:50%; flex:none; background:#26292f; }
-  .dtete span { font-size:11.5px; color:#d8d4e0; font-weight:500; }
+  /* le compte, discret et a part : il dit QUI publie, pas ce qui est publie */
+  .dtete { display:flex; align-items:center; gap:7px; margin-bottom:9px; padding-bottom:8px;
+    border-bottom:1px solid #21242a; }
+  .dtete img { width:18px; height:18px; border-radius:50%; flex:none; background:#26292f; }
+  .dtete span { font-size:10.5px; color:#8f8b9c; font-weight:500; }
   .dpuce { margin-left:auto; font-size:9px; letter-spacing:.6px; text-transform:uppercase;
     color:#6f6a80; border:1px solid #2e323a; border-radius:4px; padding:1px 6px; font-weight:400 !important; }
-  .dtitre { font-size:11px; color:#b5b2bf; font-weight:600; margin-bottom:7px; }
+  /* la puce descend ici : c'est l'activite qu'elle qualifie */
+  .dtitre { display:flex; align-items:center; font-size:11px; color:#b5b2bf; font-weight:600; margin-bottom:7px; }
   .dcorps { display:flex; gap:11px; }
   .dcorps img { width:62px; height:62px; border-radius:7px; object-fit:cover; flex:none; background:#1c1f26; }
   .dtexte { min-width:0; display:flex; flex-direction:column; justify-content:center; gap:1px; }
@@ -147,6 +150,7 @@
   /* 🔡 LES DEUX ATTENTES PARLENT D'UNE SEULE MACHINE, donc d'une seule voix : chasse fixe, lettres
      espacees, assez claire pour se lire. En gris italique elles s'excusaient d'exister. */
   #v-source.attend { font-family:"Courier New",monospace; letter-spacing:1.2px; color:#aaa3c0; font-size:11.5px; }
+  #v-source.degrade { color:#e8a87c; }   /* on lit, mais pas par la bonne porte */
   .auto { font-size:9px; letter-spacing:.5px; text-transform:uppercase; color:#7f9a7f;
     border:1px solid #2c4230; border-radius:4px; padding:0 5px; }
   /* 🔔 LE BANDEAU. Un echec partait au journal, replie par defaut : rien ne bougeait a l'ecran et
@@ -211,8 +215,9 @@
      en permanence pour un effet que personne ne regarde. Elles sont peintes une fois, fixes. */
   /* 🖥️ Un vrai moniteur de 1997 : plastique beige, biseau sorti facon Win9x, dalle enfoncee.
      Le gris ardoise faisait « sombre moderne » ; c'est la couleur du boitier qui date une machine. */
+  /* un 21/9 sur un bureau de 1997, ca n'existait pas : on resserre pour que ca ressemble a un ecran */
   .moniteur { background:linear-gradient(#ded6c2,#c9c0a8); border:2px outset #ece5d4; border-radius:6px 6px 10px 10px;
-    padding:10px 11px 0; box-shadow:0 2px 6px rgba(0,0,0,.45); margin-top:16px; }
+    padding:10px 11px 0; box-shadow:0 2px 6px rgba(0,0,0,.45); margin:16px auto 0; max-width:86%; }
   .ecran { position:relative; aspect-ratio:460/215; border-radius:12px/9px; overflow:hidden; background:#070b07;
     border:2px inset #a89f88; }
   .ecran img { width:100%; height:100%; object-fit:cover; display:block; filter:saturate(.82) contrast(1.12) brightness(.94); }
@@ -377,8 +382,10 @@
   <div class="titre pliable" id="t-apercu">aperçu discord<span class="fleche">▾</span></div>
   <div id="c-apercu">
     <div class="dcard">
-      <div class="dtete"><img id="a-avatar" alt=""><span id="a-moi">…</span><span class="dpuce">ce qui part</span></div>
-      <div class="dtitre">Joue à</div>
+      <!-- 👤 le compte au-dessus, seul : c'est QUI publie. L'activite en dessous est ce qui est publie,
+           et c'est elle que la puce qualifie — les deux ne repondent pas a la meme question. -->
+      <div class="dtete"><img id="a-avatar" alt=""><span id="a-moi">…</span></div>
+      <div class="dtitre">Joue à<span class="dpuce">ce qui part</span></div>
       <div class="dcorps">
         <img id="a-jaquette" alt="">
         <div class="dtexte">
@@ -588,8 +595,12 @@ async function rafraichir() {
   $("v-source").textContent = ph === "cherche" ? "connexion à Steam…"
     : e.cible ? "lu dans " + e.cible
     : e.cibles.length ? e.cibles.length + " cibles Steam, aucune ne montre la ligne"
-    : e.steam === "sansDebug" ? "lecture de Steam non activée — repli sur l'API web" : "Steam ne répond pas";
+    /* 📏 une phrase de sept mots en 11 px grise, coincee dans une rangee : illisible et mal calee.
+       L'etat est deja nomme juste au-dessus (« Steam : ouvert, lecture non activee ») — ici on dit
+       seulement OU on lit, en trois mots, et la couleur suffit a dire que c'est degrade. */
+    : e.steam === "sansDebug" ? "repli sur l'API web" : "Steam ne répond pas";
   $("v-source").classList.toggle("attend", ph === "cherche");
+  $("v-source").classList.toggle("degrade", e.steam === "sansDebug" || e.steam === "eteint");
 
   const c = $("v-cand");
   if (e.candidats && e.candidats.length > 1) {
