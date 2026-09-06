@@ -127,8 +127,16 @@
     letter-spacing:1.3px; font-weight:600; color:#7d768f; margin:17px 0 9px; }
   .sous::after { content:""; flex:1; height:1px; background:var(--trait); }
   .sous:first-of-type { margin-top:4px; }
-  .aide { font-size:10.5px; color:#78738a; line-height:1.5; margin:5px 0 2px; }
+  .aide { font-size:10.5px; color:#78738a; line-height:1.6; margin:5px 0 2px; }
   .aide b { color:#9c96ac; font-weight:500; }
+  /* l'intervalle rejoint les cases a cocher : cinq chiffres n'ont jamais eu besoin d'une demi-largeur */
+  .intervalle { margin-left:auto; display:flex; align-items:center; gap:6px; }
+  .intervalle label { margin:0; white-space:nowrap; }
+  .intervalle input { width:72px; text-align:right; }
+  /* le bouton de langue tient au titre, pas au bord : c'est lui qu'il qualifie */
+  .langue { margin:0 0 0 7px; padding:1px 7px; font-size:9.5px; letter-spacing:.5px; text-transform:none;
+    font-weight:600; border-radius:4px; color:var(--gris); background:transparent; }
+  .langue:hover { color:#fff; border-color:var(--or); background:#2a2e37; }
   .lien { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--gris); }
   .lien[hidden] { display:none; }
   .lien b { color:var(--or); font-weight:500; }
@@ -388,41 +396,40 @@
      panneau qu'on ouvre quand on en a besoin. L'engrenage vit dans l'en-tete d'etat, a droite. -->
 <div class="voile" id="c-modal" hidden>
   <div class="modal">
-    <div class="titre">réglages<button class="engrenage" id="b-optx" title="Fermer">✕</button></div>
-  <!-- 🧹 QUATRE CHAMPS EN VRAC, PUIS UN PAVE : on ne savait plus ce qui allait avec quoi. Deux
-       groupes nommes desormais — ce qu'on lit, et ce qu'on affiche — et le pave a disparu avec ce
-       qu'il expliquait : il n'y a plus d'application a creer a la main. -->
-  <div class="sous">ce qu'on lit</div>
-  <!-- un champ = un libelle, une ligne de saisie (bouton COLLE a l'input, pas dessous), un verdict
-       dont la place est reservee : sans ca la grille sautait des qu'un resultat s'affichait -->
-  <div class="grille">
-    <div class="champ"><label>SteamID64</label>
-      <div class="saisie"><input id="c-id"><button class="mini" id="b-detect">Détecter</button></div>
-      <div class="verdict" id="r-detect"></div></div>
-    <div class="champ"><label>Lecture toutes les</label>
-      <div class="saisie"><input id="c-int"><span class="unite">ms</span></div>
-      <div class="verdict"></div></div>
-  </div>
-  <div class="champ"><label>Clé d'API Steam <span class="opt">— optionnelle, pour les heures et les succès</span></label>
-    <div class="saisie"><input id="c-key" placeholder="(enregistrée)"><button class="mini" id="b-tapi">Tester</button></div>
+    <div class="titre"><span data-i18n="titre">réglages</span><button class="langue" id="b-langue">EN</button><button class="engrenage" id="b-optx" data-i18n-t="fermer" title="Fermer">✕</button></div>
+  <!-- 🧹 UN CHAMP PAR LIGNE, ET LES PETITS REGROUPES. Deux champs cote a cote obligeaient le champ
+       de l'intervalle a faire toute une demi-largeur pour cinq chiffres. Il rejoint donc les deux
+       cases a cocher : trois reglages courts sur une seule rangee, et les longs respirent. -->
+  <div class="sous" data-i18n="lu">ce qu'on lit</div>
+  <div class="champ"><label data-i18n="steamid">SteamID64</label>
+    <div class="saisie"><input id="c-id"><button class="mini" id="b-detect" data-i18n="detecter">Détecter</button></div>
+    <div class="verdict" id="r-detect"></div></div>
+  <div class="champ"><label><span data-i18n="cle">Clé d'API Steam</span> <span class="opt" data-i18n="cleopt">— optionnelle, pour les heures et les succès</span></label>
+    <div class="saisie"><input id="c-key" placeholder="(enregistrée)"><button class="mini" id="b-tapi" data-i18n="tester">Tester</button></div>
     <div class="verdict" id="r-api"></div></div>
-  <!-- ce qui s'ajoute au nom du jeu sur la premiere ligne de la carte -->
+  <!-- ce qui s'ajoute au nom du jeu, et a quelle cadence on relit : trois reglages courts, une rangee -->
   <div class="coches">
-    <label class="coche"><input type="checkbox" id="c-heures"> temps de jeu total</label>
-    <label class="coche"><input type="checkbox" id="c-succes"> succès</label>
+    <label class="coche"><input type="checkbox" id="c-heures"> <span data-i18n="heures">temps de jeu total</span></label>
+    <label class="coche"><input type="checkbox" id="c-succes"> <span data-i18n="succes">succès</span></label>
+    <span class="intervalle">
+      <label data-i18n="lecture">Lecture toutes les</label>
+      <input id="c-int"><span class="unite">ms</span>
+    </span>
   </div>
 
-  <div class="sous">ce que Discord affiche</div>
-  <label class="coche gros"><input type="checkbox" id="c-auto"> trouver l'application du jeu automatiquement</label>
-  <div class="aide">Discord publie la liste des jeux qu'il sait reconnaître — <b>19 192 jeux Steam</b>, chacun
-    avec son application officielle. SRPD y cherche l'identifiant du jeu en cours et l'emprunte : « Joue à
-    Stellaris » s'écrit tout seul, sans rien créer ni copier. Le bouton <b>changer</b> de la page reste
-    prioritaire si tu préfères choisir toi-même.</div>
-  <div class="champ"><label>Application de repli <span class="opt">— quand le jeu n'est pas dans la liste</span></label>
-    <div class="saisie"><input id="c-app"><button class="mini" id="b-tdisc">Tester</button></div>
+  <div class="sous" data-i18n="affiche">ce que Discord affiche</div>
+  <label class="coche gros"><input type="checkbox" id="c-auto"> <span data-i18n="auto">trouver l'application du jeu automatiquement</span></label>
+  <!-- 📐 des retours a la ligne CHOISIS : une idee par ligne, coupee a la fin d'une phrase et non
+       au milieu d'un mot. Le texte au fil de l'eau cassait ses phrases n'importe ou. -->
+  <div class="aide" data-i18n-html="aide">Discord publie la liste des jeux qu'il sait reconnaître — <b>19 192 jeux Steam</b>.<br>
+    SRPD y cherche le jeu en cours et emprunte son application officielle.<br>
+    « Joue à Stellaris » s'écrit alors tout seul, sans rien créer ni copier.<br>
+    Le bouton <b>changer</b> de la page reste prioritaire si tu préfères choisir toi-même.</div>
+  <div class="champ"><label><span data-i18n="repli">Application de repli</span> <span class="opt" data-i18n="replinote">— quand le jeu n'est pas dans la liste</span></label>
+    <div class="saisie"><input id="c-app"><button class="mini" id="b-tdisc" data-i18n="tester">Tester</button></div>
     <div class="verdict" id="r-disc"></div></div>
 
-  <div class="actions"><button class="fort" id="b-cfg">Enregistrer</button></div>
+  <div class="actions"><button class="fort" id="b-cfg" data-i18n="enregistrer">Enregistrer</button></div>
   </div>
 </div>
 
@@ -633,6 +640,40 @@ $("b-quit").onclick = () => {
 
 /* ⚙️ LE PANNEAU DE RÉGLAGES — trois façons de le fermer, parce qu'un panneau qui piège est pire
    qu'un panneau absent : la croix, le voile autour, et Échap. */
+/* 🌐 LE PANNEAU PARLE DEUX LANGUES — lui seul. Traduire l'application entiere demanderait de sortir
+   chaque chaine du code, y compris les messages du pont ; ca n'a pas de sens tant que le reste bouge.
+   Ici les libelles vivent dans le HTML et le dictionnaire ne fait que les remplacer. */
+const I18N = {
+  fr: { titre: "réglages", fermer: "Fermer", lu: "ce qu'on lit", steamid: "SteamID64",
+    detecter: "Détecter", cle: "Clé d'API Steam", cleopt: "— optionnelle, pour les heures et les succès",
+    tester: "Tester", heures: "temps de jeu total", succes: "succès", lecture: "Lecture toutes les",
+    affiche: "ce que Discord affiche", auto: "trouver l'application du jeu automatiquement",
+    aide: "Discord publie la liste des jeux qu'il sait reconnaître — <b>19 192 jeux Steam</b>.<br>"
+      + "SRPD y cherche le jeu en cours et emprunte son application officielle.<br>"
+      + "« Joue à Stellaris » s'écrit alors tout seul, sans rien créer ni copier.<br>"
+      + "Le bouton <b>changer</b> de la page reste prioritaire si tu préfères choisir toi-même.",
+    repli: "Application de repli", replinote: "— quand le jeu n'est pas dans la liste", enregistrer: "Enregistrer" },
+  en: { titre: "settings", fermer: "Close", lu: "what it reads", steamid: "SteamID64",
+    detecter: "Detect", cle: "Steam API key", cleopt: "— optional, for playtime and achievements",
+    tester: "Test", heures: "total playtime", succes: "achievements", lecture: "Read every",
+    affiche: "what Discord shows", auto: "find the game's application automatically",
+    aide: "Discord publishes the list of games it recognises — <b>19,192 Steam games</b>.<br>"
+      + "SRPD looks up the running game and borrows its official application.<br>"
+      + "« Playing Stellaris » then writes itself, with nothing to create or copy.<br>"
+      + "The <b>changer</b> button on the page still wins if you would rather pick yourself.",
+    repli: "Fallback application", replinote: "— when the game is not in the list", enregistrer: "Save" },
+};
+function appliquerLangue(l) {
+  const t = I18N[l] || I18N.fr;
+  $("c-modal").querySelectorAll("[data-i18n]").forEach(e => { const v = t[e.dataset.i18n]; if (v) e.textContent = v; });
+  $("c-modal").querySelectorAll("[data-i18n-html]").forEach(e => { const v = t[e.dataset.i18nHtml]; if (v) e.innerHTML = v; });
+  $("c-modal").querySelectorAll("[data-i18n-t]").forEach(e => { const v = t[e.dataset.i18nT]; if (v) e.title = v; });
+  $("b-langue").textContent = l === "fr" ? "EN" : "FR";   // le bouton annonce la langue d'ARRIVEE
+  localStorage.setItem("langue", l);
+}
+$("b-langue").onclick = () => appliquerLangue(localStorage.getItem("langue") === "en" ? "fr" : "en");
+appliquerLangue(localStorage.getItem("langue") || "fr");
+
 const modal = ouvert => { $("c-modal").hidden = !ouvert; };
 $("b-opt").onclick = () => modal(true);
 $("b-optx").onclick = () => modal(false);
