@@ -17,7 +17,7 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
-const { execFile, spawn } = require("child_process");
+const { execFile, execFileSync, spawn } = require("child_process");
 const WebSocket = require("ws");
 const DiscordRPC = require("discord-rpc");
 const jeux = require("./stellaris");   // ce que la sauvegarde sait dire, quand on sait la lire
@@ -626,14 +626,26 @@ const reduireFenetre = () => new Promise(res => {
     "ForEach-Object { [N.W]::ShowWindowAsync($_.MainWindowHandle, 6) }"],
     { timeout: 8000 }, () => res());
 });
+const CMD_FERMER = () => "Get-CimInstance Win32_Process -Filter \"Name='msedge.exe'\" | " +
+  "Where-Object { $_.CommandLine -like '*" + PROFIL().replace(/'/g, "''") + "*' } | " +
+  "ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }";
 const fermerFenetre = () => new Promise(res => {
-  const profil = PROFIL();
-  execFile("powershell", ["-NoProfile", "-NonInteractive", "-Command",
-    "Get-CimInstance Win32_Process -Filter \"Name='msedge.exe'\" | " +
-    "Where-Object { $_.CommandLine -like '*" + profil.replace(/'/g, "''") + "*' } | " +
-    "ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"],
+  execFile("powershell", ["-NoProfile", "-NonInteractive", "-Command", CMD_FERMER()],
     { timeout: 8000 }, () => { pidFenetre = null; res(); });
 });
+/* 🧟 LE PONT NE DOIT RIEN LAISSER DERRIERE LUI — et il en laissait.
+   « Fermer la fenetre ne tue pas le pont » etait voulu. L'inverse ne l'etait pas : quand la console
+   mourait autrement que par le bouton Quitter (la croix, Ctrl+C, l'extinction du PC), personne
+   n'appelait `fermerFenetre`. Les processus Edge de NOTRE profil survivaient donc, sans interface
+   puisque plus rien n'ecoutait — puis Windows les relancait a la session suivante avec « rouvrir mes
+   applications », et ils consommaient le GPU integre au demarrage. Constate sur la machine : six a
+   huit processus fantomes, chipset a 80 %.
+   ⚠️ Version SYNCHRONE indispensable : un gestionnaire `exit` ne peut rien attendre d'asynchrone,
+   et Windows ne laisse que quelques secondes a la fermeture d'une console. */
+const fermerFenetreSync = () => {
+  try { execFileSync("powershell", ["-NoProfile", "-NonInteractive", "-Command", CMD_FERMER()],
+    { timeout: 6000, stdio: "ignore" }); } catch (e) {}
+};
 const annulerSortie = () => { if (sortiePrevue) { clearTimeout(sortiePrevue); sortiePrevue = null; } };
 function programmerSortie(ms, motif) {
   annulerSortie();
@@ -709,6 +721,9 @@ async function ouvrirFenetre(url) {
       credentials_enable_service: false,
       credentials_enable_autosignin: false,
       signin: { allowed: false, allowed_on_next_startup: false },
+      // 👻 sans ca, Edge s'autorise a garder des processus vivants apres la fermeture de la fenetre
+      background_mode: { enabled: false },
+      session: { restore_on_startup: 5 },   // 5 = page vierge : rien a ressusciter si Windows le relance
       browser: { has_seen_welcome_page: true, show_home_button: false },
       profile: { exit_type: "Normal", exited_cleanly: true,
         password_manager_enabled: false, default_content_setting_values: {} },
@@ -727,7 +742,10 @@ async function ouvrirFenetre(url) {
         //    a l'Edge habituel — c'est aussi ce qui empeche la taille de cette fenetre de deteindre.
         // 📦 --disable-component-update : la source des 168 Mo. Le service de composants d'Edge
         //    telechargeait modeles et extensions internes dans notre profil, pour une page locale.
+        // 👻 --disable-background-mode : Edge n'a plus le droit de survivre a sa propre fenetre.
+        //    C'est ce qui laissait des processus fantomes tourner sur le GPU integre apres coup.
         "--disable-sync", "--disable-signin-promo", "--disable-default-apps", "--disable-component-update",
+        "--disable-background-mode", "--disable-renderer-backgrounding", "--no-first-run",
         "--disable-background-networking", "--no-service-autorun", "--disable-breakpad",
         "--disable-features=EdgeSignInPromo,msImplicitSignIn,ImplicitSignInOnFirstRun,msEdgeWelcomePage,msEdgeShoppingHub,EdgeDiscoverHub"],
         { detached: true, stdio: "ignore" });
@@ -818,6 +836,10 @@ serveur.on("error", e => {
     try { url = fs.readFileSync(FIL_URL, "utf8").trim(); } catch (err) {}
     if (url) {
       console.log("\n  SRPD_du_pauvre tourne deja — sa fenetre se rouvre.\n");
+      /* 🙅 CETTE INSTANCE-LA NE FAIT PAS LE MENAGE EN PARTANT. Elle n'est pas le pont : elle vient
+         d'ouvrir une vue sur celui qui tourne, et le menage de sortie fermerait la fenetre qu'elle
+         vient d'ouvrir — en laissant l'utilisateur devant rien. Ni l'adresse, qui est celle d'un autre. */
+      menageFait = true;
       // le menage du profil precede l'ouverture : on ne part qu'une fois la fenetre lancee
       ouvrirFenetre(url).then(() => setTimeout(() => process.exit(0), 2000));
       return;
@@ -841,7 +863,18 @@ serveur.listen(PORT_GUI, "127.0.0.1", () => {
 const oublierUrl = () => {
   try { if (fs.readFileSync(FIL_URL, "utf8").trim() === adresse()) fs.unlinkSync(FIL_URL); } catch (e) {}
 };
-process.on("exit", oublierUrl);
-process.on("SIGINT", () => { oublierUrl(); process.exit(0); });
+/* 🚪 TOUTES LES SORTIES PASSENT PAR LE MEME MENAGE. Avant, seul le bouton Quitter fermait la
+   fenetre : la croix de la console, Ctrl+C et l'extinction du PC laissaient Edge derriere.
+   SIGHUP est celui qui compte sous Windows — c'est ce que Node recoit quand on ferme la console. */
+let menageFait = false;
+const menageSortie = () => {
+  if (menageFait) return;
+  menageFait = true;
+  oublierUrl();
+  fermerFenetreSync();
+};
+process.on("exit", menageSortie);
+for (const sig of ["SIGINT", "SIGTERM", "SIGHUP", "SIGBREAK"])
+  process.on(sig, () => { menageSortie(); process.exit(0); });
 
 brancherDiscord();
