@@ -121,30 +121,40 @@
   .ddetail.attente { color:#6f6a80; font-style:italic; }
   .dcorps img.creuse { box-shadow:inset 0 0 0 1px #2b2f38; }
   .dtemps { font-size:11.5px; color:#8fd39f; margin-top:2px; }
-  .coches { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin:10px 0 2px; }
+  .coches { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:0;
+    padding:8px 0; border-bottom:1px solid #23272f; }
   .coche { display:flex; align-items:center; gap:6px; margin:0; font-size:11.5px; color:#c3c0cc; cursor:pointer; }
   .coche input { width:auto; accent-color:var(--or); cursor:pointer; margin:0; }
-  .coche.gros { font-size:12px; color:#d8d4e0; margin-top:2px; }
+  /* la case du gros interrupteur va au bord : la ligne se lit comme un reglage, pas comme une liste */
+  .coche.gros { font-size:12px; color:#d8d4e0; width:100%; padding:8px 0; border-bottom:1px solid #23272f; }
+  .coche.gros input { margin-left:auto; }
+  /* l'intervalle passe a GAUCHE, les deux cases se rangent a droite */
+  .intervalle { margin:0 auto 0 0; display:flex; align-items:center; gap:6px; }
   /* un intertitre qui tire son propre filet jusqu'au bord : deux groupes se distinguent sans cadre */
   .sous { display:flex; align-items:center; gap:10px; font-size:9.5px; text-transform:uppercase;
     letter-spacing:1.3px; font-weight:600; color:var(--or); margin:17px 0 10px; }
   .sous::after { content:""; flex:1; height:1px; background:var(--trait); }
   .sous:first-of-type { margin-top:4px; }
-  /* 📐 LE GABARIT : libelle a GAUCHE, champ a droite. Un libelle au-dessus de son champ double la
-     hauteur du panneau pour rien — et sur une colonne, l'oeil relit chaque intitule au lieu de
-     descendre. Le verdict se glisse sous le champ, dans la meme colonne. */
-  .modal .champ { display:grid; grid-template-columns:186px 1fr; align-items:center; gap:3px 12px; margin:11px 0; }
-  .modal .champ label { grid-column:1; margin:0; line-height:1.35; }
+  /* 📐 LE GABARIT : libelle a GAUCHE, champ a droite, et une barre sous chaque rangee. Un libelle
+     au-dessus de son champ double la hauteur du panneau pour rien — et sur une colonne, l'oeil
+     relit chaque intitule au lieu de descendre. Le verdict se glisse sous le champ. */
+  .modal .champ { display:grid; grid-template-columns:148px 1fr; align-items:center; gap:3px 10px;
+    margin:0; padding:7px 0; border-bottom:1px solid #23272f; }
+  .modal .champ label { grid-column:1; margin:0; line-height:1.3; }
   .modal .champ .saisie, .modal .champ .verdict { grid-column:2; }
+  /* sauf celui-la : son libelle est trop long pour la colonne, il prend sa propre ligne */
+  .modal .champ.empile { grid-template-columns:1fr; gap:5px; }
+  .modal .champ.empile label, .modal .champ.empile .saisie, .modal .champ.empile .verdict { grid-column:1; }
+  /* les boutons d'action ont la MEME largeur : sinon leurs bords gauches dansent d'une ligne a l'autre */
+  .modal .saisie .mini { min-width:76px; justify-content:center; }
+  .modal .saisie .oeil { min-width:0; width:32px; padding:0; font-size:11px; }
   .ticone { font-size:12px; color:var(--or); margin-right:-3px; }
-  .oeil { font-size:11px; padding:0 8px; }
-  button.large { width:100%; margin:16px 0 0; padding:8px; }
+  button.large { width:100%; margin:14px 0 0; padding:8px; }
   .aide { font-size:10.5px; color:#78738a; line-height:1.6; margin:5px 0 2px; }
   .aide b { color:#9c96ac; font-weight:500; }
   /* l'intervalle rejoint les cases a cocher : cinq chiffres n'ont jamais eu besoin d'une demi-largeur */
-  .intervalle { margin-left:auto; display:flex; align-items:center; gap:6px; }
   .intervalle label { margin:0; white-space:nowrap; }
-  .intervalle input { width:72px; text-align:right; }
+  .intervalle input { width:66px; text-align:right; }
   /* le bouton de langue tient au titre, pas au bord : c'est lui qu'il qualifie */
   .langue { margin:0 0 0 7px; padding:1px 7px; font-size:9.5px; letter-spacing:.5px; text-transform:none;
     font-weight:600; border-radius:4px; color:var(--gris); background:transparent; }
@@ -192,8 +202,8 @@
   .voile { position:fixed; inset:0; z-index:20; background:rgba(8,9,12,.72); display:flex;
     align-items:flex-start; justify-content:center; padding:24px 14px; overflow-y:auto; }
   .voile[hidden] { display:none; }
-  .modal { background:var(--carte); border:1px solid #3a4050; border-radius:12px; padding:16px 18px;
-    width:100%; max-width:560px; box-shadow:0 14px 40px rgba(0,0,0,.6); }
+  .modal { background:var(--carte); border:1px solid #3a4050; border-radius:12px; padding:15px 17px;
+    width:100%; max-width:468px; box-shadow:0 14px 40px rgba(0,0,0,.6); }
   button.danger:hover { color:#ff9b9b; background:#38222a; border-color:#5a2f38; }
   .actions { display:flex; justify-content:center; gap:9px; margin-top:15px; }
   .actions button { margin:0; min-width:118px; }
@@ -427,23 +437,25 @@
     <div class="verdict" id="r-api"></div></div>
   <!-- ce qui s'ajoute au nom du jeu, et a quelle cadence on relit : trois reglages courts, une rangee -->
   <div class="coches">
-    <label class="coche"><input type="checkbox" id="c-heures"> <span data-i18n="heures">temps de jeu total</span></label>
-    <label class="coche"><input type="checkbox" id="c-succes"> <span data-i18n="succes">succès</span></label>
     <span class="intervalle">
       <label data-i18n="lecture">Lecture toutes les</label>
       <input id="c-int"><span class="unite">ms</span>
     </span>
+    <!-- le libelle AVANT sa case : on lit ce qu'on choisit, puis on voit s'il est choisi -->
+    <label class="coche"><span data-i18n="heures">temps de jeu total</span><input type="checkbox" id="c-heures"></label>
+    <label class="coche"><span data-i18n="succes">succès</span><input type="checkbox" id="c-succes"></label>
   </div>
 
   <div class="sous" data-i18n="affiche">ce que Discord affiche</div>
-  <label class="coche gros"><input type="checkbox" id="c-auto"> <span data-i18n="auto">trouver l'application du jeu automatiquement</span></label>
+  <label class="coche gros"><span data-i18n="auto">trouver l'application du jeu automatiquement</span><input type="checkbox" id="c-auto"></label>
   <!-- 📐 des retours a la ligne CHOISIS : une idee par ligne, coupee a la fin d'une phrase et non
        au milieu d'un mot. Le texte au fil de l'eau cassait ses phrases n'importe ou. -->
   <div class="aide" data-i18n-html="aide">Discord publie la liste des jeux qu'il sait reconnaître — <b>19 192 jeux Steam</b>.<br>
     SRPD y cherche le jeu en cours et emprunte son application officielle.<br>
     « Joue à Stellaris » s'écrit alors tout seul, sans rien créer ni copier.<br>
     Le bouton <b>changer</b> de la page reste prioritaire si tu préfères choisir toi-même.</div>
-  <div class="champ"><label><span data-i18n="repli">Application de repli</span> <span class="opt" data-i18n="replinote">(si le jeu n'est pas dans la liste)</span></label>
+  <!-- ce libelle-la est trop long pour tenir a gauche : il prend sa propre ligne, comme au gabarit -->
+  <div class="champ empile"><label><span data-i18n="repli">Application de repli</span> <span class="opt" data-i18n="replinote">(si le jeu n'est pas dans la liste)</span></label>
     <div class="saisie"><input id="c-app"><button class="mini" id="b-tdisc" data-i18n="tester">Tester</button></div>
     <div class="verdict" id="r-disc"></div></div>
 
